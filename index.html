@@ -3,249 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Momo · Monica Boccardi</title>
+<title>Momo · A Living Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #F6F2EA;
-    --ink: #2B2430;
-    --pansy: #5A4470;
-    --gold: #C29B4A;
-    --faded: #7A7185;
+    --bgc: #F6F2EA; --inkc: #2B2430; --headc: #5A4470;
+    --gold: #C29B4A; --faded: #7A7185;
+    --spotx: 50vw; --spoty: 50vh;
+    --spot-o: 0; --sun-o: 0; --heat-o: 0; --water-o: 0; --stage-o: 0; --rise-o: 0;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
   body {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--bgc); color: var(--inkc);
     font-family: 'Lora', Georgia, 'Palatino Linotype', serif;
-    font-size: 1.06rem;
-    line-height: 1.85;
-    -webkit-font-smoothing: antialiased;
+    font-size:1.06rem; line-height:1.85; -webkit-font-smoothing:antialiased;
+    transition: none;
   }
+  /* ------- fixed atmosphere layers ------- */
+  #fx-canvas { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:3; }
+  .layer { position:fixed; inset:0; pointer-events:none; }
+  .sunrays { z-index:1; opacity:var(--sun-o); transition:opacity 2.5s ease;
+    background:
+      linear-gradient(112deg, rgba(255,222,150,.16) 0%, transparent 22%),
+      linear-gradient(100deg, transparent 30%, rgba(255,222,150,.10) 42%, transparent 55%);
+    filter: blur(18px);
+    animation: sunshift 26s ease-in-out infinite alternate;
+  }
+  @keyframes sunshift { from { transform: translateX(-2%);} to { transform: translateX(2%);} }
+  .heatwave { z-index:1; opacity:var(--heat-o); transition:opacity 2.5s ease;
+    background: repeating-linear-gradient(180deg, rgba(255,200,120,.05) 0 60px, rgba(255,255,255,0) 60px 130px);
+    animation: heatdrift 7s linear infinite;
+    filter: blur(8px);
+  }
+  @keyframes heatdrift { from { background-position: 0 0; } to { background-position: 0 190px; } }
+  .waterline { z-index:2; opacity:var(--water-o); transition:opacity 3.5s ease;
+    background: linear-gradient(to top, rgba(58,96,104,.42), rgba(58,96,104,.16) 42%, rgba(58,96,104,0) 78%);
+  }
+  .stagelight { z-index:1; opacity:var(--stage-o); transition:opacity 2.5s ease;
+    background: radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255,214,150,.30), rgba(255,214,150,0) 70%);
+  }
+  .sunrise { z-index:1; opacity:var(--rise-o); transition:opacity 3.5s ease;
+    background: radial-gradient(ellipse 90% 60% at 50% 108%, rgba(233,164,120,.38), rgba(244,205,150,.16) 45%, rgba(244,205,150,0) 75%);
+  }
+  .spot { z-index:4; opacity:var(--spot-o); transition:opacity 2.2s ease;
+    background: radial-gradient(circle min(46vh,340px) at var(--spotx) var(--spoty),
+      rgba(6,5,12,0) 0%, rgba(6,5,12,0) 46%, rgba(6,5,12,.55) 68%, rgba(6,5,12,.86) 100%);
+  }
+  /* ------- stillness toggle ------- */
+  .stillness {
+    position:fixed; top:1rem; right:1rem; z-index:10;
+    font-family:'Lora', Georgia, serif; font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--faded); background:transparent; border:1px solid rgba(194,155,74,.5);
+    padding:.45rem .9rem; cursor:pointer; transition: color .4s, border-color .4s;
+  }
+  .stillness:hover { color:var(--gold); border-color:var(--gold); }
+  body.fx-off #fx-canvas, body.fx-off .layer { display:none; }
 
-  /* ---------- Title page ---------- */
-  .cover {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
-  }
-  .cover .title {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 300;
-    font-size: clamp(3.4rem, 11vw, 6.5rem);
-    letter-spacing: 0.42em;
-    text-indent: 0.42em; /* balances letterspacing */
-    color: var(--pansy);
-  }
-  .cover .rule {
-    width: 3.5rem;
-    height: 1px;
-    background: var(--gold);
-    margin: 1.8rem 0 2.2rem;
-  }
-  .cover .author {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 400;
-    font-size: 1.35rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink);
-  }
-  .cover-photo {
-    margin: 0 0 2.4rem;
-    max-width: min(340px, 72vw);
-  }
-  .cover-photo img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border: 1px solid rgba(194, 155, 74, 0.5);
-    padding: 10px;
-    background: var(--paper);
-    box-shadow: 0 18px 50px -18px rgba(43, 36, 48, 0.35);
-  }
-  .cover .dedication {
-    margin-top: 3.2rem;
-    font-style: italic;
-    color: var(--faded);
-    font-size: 1rem;
-  }
-  .cover .hint {
-    position: absolute;
-    bottom: 2.2rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--faded);
-    opacity: 0.7;
-  }
+  /* ------- cover ------- */
+  .cover { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; position:relative; z-index:2;}
+  .cover .title { font-family:'Cormorant Garamond', Georgia, serif; font-weight:300; font-size:clamp(3.4rem,11vw,6.5rem); letter-spacing:.42em; text-indent:.42em; color:var(--headc); transition: color 1.5s ease;}
+  .cover .rule { width:3.5rem; height:1px; background:var(--gold); margin:1.8rem 0 2.2rem; }
+  .cover-photo { margin:0 0 2.4rem; max-width:min(340px,72vw); perspective:700px; }
+  .cover-photo img { width:100%; height:auto; display:block; border:1px solid rgba(194,155,74,.5); padding:10px; background:var(--bgc);
+    box-shadow:0 18px 50px -18px rgba(43,36,48,.35); will-change:transform; transition: box-shadow .6s ease; }
+  .cover .author { font-family:'Cormorant Garamond', Georgia, serif; font-weight:400; font-size:1.35rem; letter-spacing:.18em; text-transform:uppercase; }
+  .cover .dedication { margin-top:2.6rem; font-style:italic; color:var(--faded); font-size:1rem; }
+  .cover .edition { margin-top:.6rem; font-size:.7rem; letter-spacing:.34em; text-transform:uppercase; color:var(--gold); }
+  .cover .hint { position:absolute; bottom:2.2rem; font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; color:var(--faded); opacity:.7; }
 
-  /* ---------- Hallway (contents) ---------- */
-  .hallway {
-    max-width: 34em;
-    margin: 0 auto;
-    padding: 5rem 1.5rem 4rem;
-  }
-  .hallway h2 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 400;
-    font-size: 1.05rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--faded);
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .door {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    padding: 1.15rem 1.25rem;
-    border-left: 1px solid rgba(194, 155, 74, 0.45);
-    border-right: 1px solid rgba(194, 155, 74, 0.45);
-    margin-bottom: 1.4rem;
-    transition: background 0.4s ease, border-color 0.4s ease;
-  }
-  .door:hover {
-    background: rgba(90, 68, 112, 0.05);
-    border-color: var(--gold);
-  }
-  .door .room-no {
-    font-size: 0.72rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--gold);
-    display: block;
-    margin-bottom: 0.3rem;
-  }
-  .door .room-name {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.45rem;
-    font-weight: 500;
-    color: var(--pansy);
-    display: block;
-  }
-  .door .room-sub {
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--faded);
-    display: block;
-    margin-top: 0.15rem;
-  }
+  /* ------- hallway ------- */
+  .hallway { max-width:34em; margin:0 auto; padding:5rem 1.5rem 4rem; position:relative; z-index:2;}
+  .hallway h2 { font-family:'Cormorant Garamond', Georgia, serif; font-weight:400; font-size:1.05rem; letter-spacing:.3em; text-transform:uppercase; color:var(--faded); text-align:center; margin-bottom:3rem; }
+  .door { display:block; text-decoration:none; color:inherit; padding:1.15rem 1.25rem;
+    border-left:1px solid rgba(194,155,74,.45); border-right:1px solid rgba(194,155,74,.45);
+    margin-bottom:1.4rem; transition: background .4s ease, border-color .4s ease, transform .4s ease; }
+  .door:hover { background:rgba(90,68,112,.05); border-color:var(--gold); transform: translateX(4px); }
+  .door .room-no { font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:.3rem; }
+  .door .room-name { font-family:'Cormorant Garamond', Georgia, serif; font-size:1.45rem; font-weight:500; color:var(--headc); display:block; transition: color 1.5s ease;}
+  .door .room-sub { font-style:italic; font-size:.95rem; color:var(--faded); display:block; margin-top:.15rem; }
 
-  /* ---------- Chapters ---------- */
-  .room {
-    max-width: 34em;
-    margin: 0 auto;
-    padding: 5.5rem 1.5rem 2rem;
-  }
-  .doorframe {
-    text-align: center;
-    margin-bottom: 3.4rem;
-  }
-  .doorframe .room-no {
-    display: inline-block;
-    font-size: 0.72rem;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--gold);
-    padding: 0.4rem 1.6rem;
-    border-left: 1px solid var(--gold);
-    border-right: 1px solid var(--gold);
-    margin-bottom: 1.6rem;
-  }
-  .doorframe h2 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(2rem, 6vw, 2.9rem);
-    color: var(--pansy);
-    line-height: 1.2;
-  }
-  .doorframe .sub {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 1.25rem;
-    color: var(--faded);
-    margin-top: 0.6rem;
-  }
-  .room p {
-    margin-bottom: 1.6rem;
-  }
-  .room p.epigraph {
-    font-style: italic;
-    text-align: center;
-    color: var(--pansy);
-    margin: 0 0 3rem;
-    font-size: 1.1rem;
-  }
-  .room p.first::first-letter {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 3.6em;
-    line-height: 0.82;
-    float: left;
-    padding-right: 0.09em;
-    color: var(--pansy);
-    font-weight: 400;
-  }
-  .note-body p {
-    font-style: italic;
-    color: #443B4E;
-  }
-  .breath {
-    text-align: center;
-    color: var(--gold);
-    letter-spacing: 0.9em;
-    text-indent: 0.9em;
-    padding: 3.5rem 0 1rem;
-    font-size: 1rem;
-    user-select: none;
-  }
+  /* ------- chapters ------- */
+  .room { max-width:34em; margin:0 auto; padding:5.5rem 1.5rem 2rem; position:relative; z-index:2;}
+  .doorframe { text-align:center; margin-bottom:3.4rem; }
+  .doorframe .room-no { display:inline-block; font-size:.72rem; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); padding:.4rem 1.6rem; border-left:1px solid var(--gold); border-right:1px solid var(--gold); margin-bottom:1.6rem; }
+  .doorframe h2 { font-family:'Cormorant Garamond', Georgia, serif; font-weight:400; font-size:clamp(2rem,6vw,2.9rem); color:var(--headc); line-height:1.2; transition: color 1.5s ease;}
+  .doorframe .sub { font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; font-weight:400; font-size:1.25rem; color:var(--faded); margin-top:.6rem; }
+  .room p { margin-bottom:1.6rem; position:relative; }
+  .room p.epigraph { font-style:italic; text-align:center; color:var(--headc); margin:0 0 3rem; font-size:1.1rem; transition: color 1.5s ease;}
+  .room p.first::first-letter { font-family:'Cormorant Garamond', Georgia, serif; font-size:3.6em; line-height:.82; float:left; padding-right:.09em; color:var(--headc); font-weight:400; }
+  .note-body p { font-style:italic; }
+  .breath { text-align:center; color:var(--gold); letter-spacing:.9em; text-indent:.9em; padding:3.5rem 0 1rem; font-size:1rem; user-select:none; position:relative; z-index:2;}
+  .to-be-continued { text-align:center; padding:5rem 1.5rem 7rem; color:var(--faded); font-style:italic; font-size:1rem; position:relative; z-index:2;}
+  .to-be-continued .rule { width:3.5rem; height:1px; background:var(--gold); margin:0 auto 2rem; }
 
-  /* ---------- Ending ---------- */
-  .to-be-continued {
-    text-align: center;
-    padding: 5rem 1.5rem 7rem;
-    color: var(--faded);
-    font-style: italic;
-    font-size: 1rem;
-  }
-  .to-be-continued .rule {
-    width: 3.5rem;
-    height: 1px;
-    background: var(--gold);
-    margin: 0 auto 2rem;
-  }
+  /* ------- story elements ------- */
+  .glowstar { position:absolute; right:-2.2rem; top:-.4rem; font-size:1.05rem; color:#D9F7CE; opacity:0;
+    text-shadow:0 0 6px #BDF0AC, 0 0 16px #9CE887, 0 0 34px rgba(156,232,135,.7);
+    transition: opacity 3s ease; animation: starpulse 3.4s ease-in-out infinite; pointer-events:none; }
+  @keyframes starpulse { 0%,100% { transform:scale(1); filter:brightness(1);} 50% { transform:scale(1.18); filter:brightness(1.5);} }
+  body[data-scene="starlight"] .glowstar { opacity:1; }
+  @media (max-width:760px){ .glowstar { right:.1rem; top:-1.5rem; } }
 
-  /* ---------- Reveal on scroll ---------- */
-  .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 1.1s ease, transform 1.1s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: none;
-  }
+  .windowglow { position:absolute; inset:-1.4rem -2rem; z-index:-1; opacity:0; transition: opacity 3s ease;
+    background: radial-gradient(closest-side, rgba(255,186,92,.30), rgba(255,186,92,0) 72%); }
+  body[data-scene="ranger"] .windowglow { opacity:1; }
 
-  ::selection { background: rgba(194, 155, 74, 0.3); }
+  ::selection { background: rgba(194,155,74,.3); }
+
+  .reveal { opacity:0; transform:translateY(14px); transition:opacity 1s ease, transform 1s ease; }
+  .reveal.visible { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior:auto; }
+    .reveal { opacity:1 !important; transform:none !important; transition:none !important; }
+    #fx-canvas, .layer { display:none !important; }
+    .glowstar { animation:none; }
+  }
 </style>
 </head>
-<body>
+<body data-scene="cover">
+<canvas id="fx-canvas" aria-hidden="true"></canvas>
+<div class="layer sunrays" aria-hidden="true"></div>
+<div class="layer heatwave" aria-hidden="true"></div>
+<div class="layer waterline" aria-hidden="true"></div>
+<div class="layer stagelight" aria-hidden="true"></div>
+<div class="layer sunrise" aria-hidden="true"></div>
+<div class="layer spot" aria-hidden="true"></div>
+<button class="stillness" id="stillness" type="button">✦ stillness</button>
+
 
 <!-- Cover -->
-<section class="cover">
+<section class="cover" data-scene="cover">
   <div class="title">MOMO</div>
   <div class="rule"></div>
   <figure class="cover-photo">
@@ -253,10 +143,11 @@
   </figure>
   <div class="author">Monica Boccardi</div>
   <div class="dedication">for my son</div>
+  <div class="edition">a living edition</div>
 </section>
 
 <!-- Hallway -->
-<nav class="hallway reveal">
+<nav class="hallway reveal" data-scene="base">
   <h2>The Rooms</h2>
   <a class="door" href="#note">
     <span class="room-no">Before the story</span>
@@ -295,7 +186,7 @@
 </nav>
 
 <!-- Note -->
-<section class="room note-body" id="note">
+<section class="room note-body" id="note" data-scene="awakening">
   <div class="doorframe reveal">
     <h2>A Note Before This Story Begins</h2>
   </div>
@@ -308,7 +199,7 @@
 <div class="breath reveal">· · ·</div>
 
 <!-- Room I -->
-<section class="room" id="room1">
+<section class="room" id="room1" data-scene="garden">
   <div class="doorframe reveal">
     <div class="room-no">Room I</div>
     <h2>The First Room</h2>
@@ -317,9 +208,9 @@
   <p class="first reveal">From the first moment I began to see, I knew nothing of the word &ldquo;me,&rdquo; so it was easy to simply be. I can still remember my first room, though I couldn&rsquo;t have been more than a few months old. The world towered above me... legs and light and laughter seen from the floor up. There were yellow plastic woven chairs, so cheery and geometrically fascinating from my tiny perspective. The floors were hard and white, cool against my skin, and the warmth of my mother&rsquo;s arms when she lifted me felt like sunlight turned to flesh. Beams of real sunlight danced through the window like playful fairies as I snuggled my little silkie and devoured my warm bottle of milk. These memories still drift vividly through my mind&rsquo;s eye whenever I reach for them.</p>
   <p class="reveal">Time then was not a straight line but a shimmer... moments floating, colliding, vanishing like soap bubbles. I remember sound before words: the rhythm of voices, the hum of a refrigerator that felt like a lullaby, the faraway bark of a dog echoing through sunlight. The air itself seemed alive, carrying warmth, scent, and comfort in invisible waves. I didn&rsquo;t yet know what distance was, or that people could ever leave. Everything was here, always; mother, light, the gentle thud of her heart when she held me. The world was a cradle, and I floated inside it, content to simply exist.</p>
   <p class="reveal">Then one morning, the rhythm changed. My mother&rsquo;s arms lifted me not toward the window light but toward the door. I remember the rustle of her clothes, the scent of her perfume, the soft tremor in my chest as we stepped into the brightness. The world outside moved too fast... cars flashing by, trees bending in the wind, clouds racing overhead. I didn&rsquo;t know the word &ldquo;leaving,&rdquo; only the ache of motion and the blur of color as we drove away. But soon the road slowed, and the air grew calmer. My grandmother&rsquo;s little white house appeared, wrapped in flowers and sunlight, as if it had been waiting for me all along. Her doorway smelled of coffee and goodness. Inside, everything glowed; the toasty air, the hum of her voice, the small white poodle Tiki wagging as if he&rsquo;d known me forever, Lucy the orange cat stretching on the windowsill, and Bridget, soft and bright, resting at the foot of grandma&rsquo;s chair. My fear dissolved in that warmth. My mother&rsquo;s goodbye faded into the rhythm of my grandmother&rsquo;s love, steady as a heartbeat.</p>
-  <p class="reveal">Behind my grandmother&rsquo;s house was her garden, a tiny patch of earth that seemed to me as vast as a forest. Flowers bloomed in every corner, especially pansies, her favorite, their faces bright and brave in the sun. The air was always alive with wings and motion... bees murmuring, butterflies tumbling, birds singing from the cherry tree that guarded the fence. My grandmother never hurried me. She moved through her days with the patience of the earth itself, speaking softly, laughing easily, never cross, never cruel. She&rsquo;d tell me that silence was golden, and in her company, I learned what that meant. We&rsquo;d walk together to the grocery store or down toward the flood wall, her hand warm in mine, her voice drifting with stories from when she was a girl during the great flood in Parkersburg. Even the way she said the word &ldquo;flood&rdquo; carried a hush, as if the river still lived inside her memory.</p>
-  <p class="reveal">I remember lying on the ground near the rhubarb, Bridget and Tiki and Charlie and Ty somewhere close by, the sun warm on my back, watching the ants. They were all my friends, my truest ones in those early years, the dogs and cats who asked nothing of me and gave everything. We were our own little world out there, the animals and I, while my grandmother moved quietly nearby with her flowers. I would watch the ants for hours. Over days. Over weeks. They moved in perfect order through their own complete universe, purposeful and unhurried, carrying things many times their size, communicating without words, building something I couldn&rsquo;t see the whole of but knew was there. I would lie very still and imagine myself small enough to walk among them, to enter their world the way you step through a door. I understood something then that I wouldn&rsquo;t have language for until much later, that the world was layered. That life existed in worlds within worlds, each one whole and busy and entirely unaware of the others running alongside it. That you could be standing in one world and another could be happening right beneath your feet, or across an ocean, or in a life you hadn&rsquo;t lived yet. I think of those hours sometimes when I try to understand how I was able, later, to step off planes in countries where I didn&rsquo;t speak a single word and feel curious rather than only afraid. Something in me had already practiced it. Had already learned, on my grandmother&rsquo;s back steps with her animals and her flowers and her silence, that other worlds were not threatening. They were just waiting to be understood.</p>
-  <p class="reveal">The kitchen was its own small world. A percolator sat on the stove, sighing and bubbling with a sound I came to love before I even knew the word for it. She always made her coffee with lots of cream and sugar, and she always gave me a little taste. I didn&rsquo;t know then that she was giving me something I would carry for the rest of my life. I only knew it was warm, and sweet, and hers.</p>
+  <p class="reveal">Behind my grandmother&rsquo;s house was her garden, a tiny patch of earth that seemed to me as vast as a forest. Flowers bloomed in every corner, especially pansies, her favorite, their faces bright and brave in the sun. The air was always alive with wings and motion... bees murmuring, butterflies tumbling, birds singing from the cherry tree that guarded the fence. My grandmother never hurried me. She moved through her days with the patience of the earth itself, speaking softly, laughing easily, never cross, never cruel. She&rsquo;d tell me that silence was golden, and in her company, I learned what that meant. <span id="s-flood" data-scene="flood">We&rsquo;d walk together to the grocery store or down toward the flood wall, her hand warm in mine, her voice drifting with stories from when she was a girl during the great flood in Parkersburg. Even the way she said the word &ldquo;flood&rdquo; carried a hush, as if the river still lived inside her memory.</span></p>
+  <p class="reveal" id="p-ants" data-scene="garden">I remember lying on the ground near the rhubarb, Bridget and Tiki and Charlie and Ty somewhere close by, the sun warm on my back, watching the ants. They were all my friends, my truest ones in those early years, the dogs and cats who asked nothing of me and gave everything. We were our own little world out there, the animals and I, while my grandmother moved quietly nearby with her flowers. I would watch the ants for hours. Over days. Over weeks. They moved in perfect order through their own complete universe, purposeful and unhurried, carrying things many times their size, communicating without words, building something I couldn&rsquo;t see the whole of but knew was there. I would lie very still and imagine myself small enough to walk among them, to enter their world the way you step through a door. I understood something then that I wouldn&rsquo;t have language for until much later, that the world was layered. That life existed in worlds within worlds, each one whole and busy and entirely unaware of the others running alongside it. That you could be standing in one world and another could be happening right beneath your feet, or across an ocean, or in a life you hadn&rsquo;t lived yet. I think of those hours sometimes when I try to understand how I was able, later, to step off planes in countries where I didn&rsquo;t speak a single word and feel curious rather than only afraid. Something in me had already practiced it. Had already learned, on my grandmother&rsquo;s back steps with her animals and her flowers and her silence, that other worlds were not threatening. They were just waiting to be understood.</p>
+  <p class="reveal" data-scene="garden">The kitchen was its own small world. A percolator sat on the stove, sighing and bubbling with a sound I came to love before I even knew the word for it. She always made her coffee with lots of cream and sugar, and she always gave me a little taste. I didn&rsquo;t know then that she was giving me something I would carry for the rest of my life. I only knew it was warm, and sweet, and hers.</p>
   <p class="reveal">But it was the back steps where she truly taught me. They weren&rsquo;t much, just a few steps leading down from the house into her garden, but to me they were a throne and a classroom and a church all at once. She would sit there and take my hand, this tiny woman, under five feet tall, and we would look at her flowers together without needing to say very much at all. She moved through silence the way other people moved through conversation, easily, naturally, as if quiet were simply another way of speaking. I learned from her, without being taught, that you could transmit entire worlds without a single word. That stillness was not emptiness. That if you sat still long enough and opened yourself completely, the garden would come to you.</p>
   <p class="reveal">Every time I was with her, I felt I was coming home. Not to a place, but to something. A feeling I recognized before I had language for it, something settled and safe and completely without performance. I have never in my life met anyone as genuinely pure as she was. Not before, not since. I was lucky in ways I couldn&rsquo;t possibly have understood then, that my first and deepest experience of love came without condition, without shadow. She was simply good. The way sunlight is good. The way a flower turning toward warmth is good. It became the measure I would carry quietly inside me for everything that came after.</p>
   <p class="reveal">Her patience had been honed by a lifetime of love and loss. Motherhood came easily to my grandmother; she had raised six children over twenty years, from the eldest to the youngest, my mother, the baby of the family. When I was born, my grandfather&rsquo;s health had already fallen into decline, and he was bedridden. He called me Moni-Kay, and somehow, even in his frailty, I brought a spark of joy back into the quiet house. Their nest had just emptied after a lifetime of fullness, children grown, married, and gone, and now, suddenly, a baby&rsquo;s cry filled the silence again.</p>
@@ -329,7 +220,7 @@
 <div class="breath reveal">· · ·</div>
 
 <!-- Room II -->
-<section class="room" id="room2">
+<section class="room" id="room2" data-scene="windows">
   <div class="doorframe reveal">
     <div class="room-no">Room II</div>
     <h2>A Room with Windows</h2>
@@ -343,15 +234,15 @@
   <p class="reveal">I was too young to understand the reasons for their animosity toward one another, and even now, it remains something I cannot fully explain. But I felt it then, unmistakably. The contrast was sharp enough to teach me without words. I knew, instinctively, which world I belonged to. Somewhere deep within me, an awareness was already forming, guiding me toward the example of my mother&rsquo;s family. I understood, without being told, that if I wanted happiness, if I wanted a sense of lightness in my life, this was the path I would have to follow.</p>
   <p class="reveal">That awareness did not stay abstract; it settled into the way I moved through the world. I became attentive, watchful, sensitive to shifts in tone and mood. I learned to adjust myself instinctively, to soften my presence, to be agreeable, helpful, easy to love. Praise felt like proof of safety, and I sought it quietly, hoping it might bridge the distance I felt. I tried not to need too much and instead turned toward a faith that had not been taught; it simply was.</p>
   <p class="reveal">My mother used to say that I had begun speaking very late as a child. Everyone worried at first. But once I finally found my voice, there was no stopping it. My little motor mouth turned on and stayed on. I talked constantly to her, to my grandmother, to my toys, to myself. Around those I trusted, words poured out of me effortlessly, as if I had been storing them up for years. But where affection felt uncertain, my voice disappeared. There, I became quiet and shy, careful with every sound I made.</p>
-  <p class="reveal">My mother had given me a little plastic, glow-in-the-dark star with a photograph of Jesus inside. Each night, after the lights were out, I would watch it and pray about everything and anything until I fell into a deep sleep. I spoke to Jesus the way a child speaks to a friend, simply and without fear. I spoke to my guardian angels, to the archangels too, without knowing their names or roles, only that they were there and listening. No one had ever told me that I couldn&rsquo;t speak directly to them, and so I did. This quiet ritual became a refuge, something I would carry with me for the rest of my life.</p>
-  <p class="reveal">Only later, when I learned about religions and their doctrines, did I begin to question my methods&hellip; but not for long. They had worked for me perfectly, just as they always had. Funny enough, my father would return that little star to me many years later, and I cherish it now as one of my most prized possessions.</p>
+  <p class="reveal starp" id="p-star" data-scene="starlight"><span class="glowstar" aria-hidden="true">✦</span>My mother had given me a little plastic, glow-in-the-dark star with a photograph of Jesus inside. Each night, after the lights were out, I would watch it and pray about everything and anything until I fell into a deep sleep. I spoke to Jesus the way a child speaks to a friend, simply and without fear. I spoke to my guardian angels, to the archangels too, without knowing their names or roles, only that they were there and listening. No one had ever told me that I couldn&rsquo;t speak directly to them, and so I did. This quiet ritual became a refuge, something I would carry with me for the rest of my life.</p>
+  <p class="reveal" data-scene="windows">Only later, when I learned about religions and their doctrines, did I begin to question my methods&hellip; but not for long. They had worked for me perfectly, just as they always had. Funny enough, my father would return that little star to me many years later, and I cherish it now as one of my most prized possessions.</p>
   <p class="reveal">Around those I felt secure with, I was open and expressive, unguarded in my joy. But where affection felt uncertain, I became careful. I listened more than I spoke. I studied faces. I learned which version of myself was most welcome and carried it with me like a small offering. Even then, without language for it, I understood that love could be abundant or withheld, and I adjusted accordingly. This was how I learned to belong&hellip;by sensing first, then shaping myself to fit.</p>
 </section>
 
 <div class="breath reveal">· · ·</div>
 
 <!-- Room III -->
-<section class="room" id="room3">
+<section class="room" id="room3" data-scene="voices">
   <div class="doorframe reveal">
     <div class="room-no">Room III</div>
     <h2>A Room Full of Voices</h2>
@@ -374,7 +265,7 @@
 <div class="breath reveal">· · ·</div>
 
 <!-- Room IV -->
-<section class="room" id="room4">
+<section class="room" id="room4" data-scene="dusk">
   <div class="doorframe reveal">
     <div class="room-no">Room IV</div>
     <h2>A Room of Shadows</h2>
@@ -389,12 +280,12 @@
   <p class="reveal">I did not have many friends at school, so a campground full of strangers felt full of possibility. There were activities for children and teenagers, and I quickly met a group who invited me to an evening movie at the amphitheater. To me, it sounded glamorous, independence, adventurous, and just belonging.</p>
   <p class="reveal">When I asked my parents, they said absolutely not. It would be after dark, and I was not allowed to go. I was furious. I retreated to pout in private, nursing the indignity only an eleven-year-old can feel so deeply. Then I made a decision that felt bold and important at the time: I would go anyway.</p>
   <p class="reveal">It was still daylight when I slipped away. The group picked me up in a truck, the children piled laughing into the back while the adults rode in front. We drove farther than I expected through the enormous campground until we reached the amphitheater. By the time the movie began, the sky had already darkened, and with the darkness came fear. My excitement drained quickly. I knew I would be in terrible trouble. My father was strict, and I could already feel the weight of what awaited me.</p>
-  <p class="reveal">So I decided to walk back alone.</p>
+  <p class="reveal" data-scene="nightwalk">So I decided to walk back alone.</p>
   <p class="reveal">At first it seemed manageable. Then the road grew darker, quieter, longer. Forest lined both sides. My red clogs struck the pavement in the silence &ldquo;clop, clop, clop&rdquo; the sound of a foolish little girl trying to outrun consequences. I no longer knew where I was.</p>
   <p class="reveal">Then a pickup truck slowed beside me. There were boys inside, older than I was, shouting things I could not fully hear or understand. Some instinct older than language rose inside me. I ran.</p>
   <p class="reveal">I ran blindly into the woods as they stopped the truck behind me. I heard doors slam, voices yelling, laughter cutting through the dark. Branches whipped my face. Twigs clawed at my arms. I lost my shoes somewhere in the panic and kept running barefoot, praying without words, driven by pure terror.</p>
-  <p class="reveal">Then, like something conjured from mercy itself, I saw a house standing alone in the trees. I pounded on the door. A man opened it. He was the park ranger.</p>
-  <p class="reveal">I was sobbing so hard I could barely speak, but somehow I told him enough. He brought me inside, calmed me, then put me in his truck and drove through the maze of roads until we found my campground. My parents were frantic. My grandparents were shaken. I had never seen fear on all their faces at once.</p>
+  <p class="reveal rangerp" data-scene="ranger"><span class="windowglow" aria-hidden="true"></span>Then, like something conjured from mercy itself, I saw a house standing alone in the trees. I pounded on the door. A man opened it. He was the park ranger.</p>
+  <p class="reveal" data-scene="dawnreturn">I was sobbing so hard I could barely speak, but somehow I told him enough. He brought me inside, calmed me, then put me in his truck and drove through the maze of roads until we found my campground. My parents were frantic. My grandparents were shaken. I had never seen fear on all their faces at once.</p>
   <p class="reveal">The ranger later went back to search for the boys but never found them. He checked on me the next day. I remember his kindness more clearly than any punishment that followed.</p>
   <p class="reveal">That night taught me more than obedience. It taught me that danger can arrive wearing laughter, that instincts are gifts, and that growing up has nothing to do with red clogs or pretending to be older than you are.</p>
   <p class="reveal">Long after the bruises faded and the scolding was forgotten, that night remained with me. Something invisible had shifted. Until then, the world had still seemed mostly kind, mostly manageable, a place where adults were near and consequences were simple. Afterward, I understood that shadows existed beyond the firelight, and that not every smile meant safety. But I also discovered something else: inside me lived a fierce instinct, quick and clear, that could rise when needed and guide me home. I moved differently after that night, more watchful, more aware, yet stronger too. Even now, many years later, I still walk through life with that same quiet radar, listening when something feels wrong, trusting the ancient voice within that once sent a barefoot girl running through the dark.</p>
@@ -403,7 +294,7 @@
 <div class="breath reveal">· · ·</div>
 
 <!-- Room V -->
-<section class="room" id="room5">
+<section class="room" id="room5" data-scene="heat">
   <div class="doorframe reveal">
     <div class="room-no">Room V</div>
     <h2>A Room of Transformation</h2>
@@ -412,9 +303,9 @@
   <p class="first reveal">Only one summer passed before the next room opened. I was no longer the girl in red clogs running barefoot through the dark, though I carried her with me, more watchful now, the way she had taught me to be. I had just finished sixth grade. Elementary school was behind me, and middle school was waiting that fall, though I didn&rsquo;t know yet what either of those things would come to mean.</p>
   <p class="reveal">It was a different summer, a different lake.</p>
   <p class="reveal">That summer, the grass at the campground had gone dry and brittle in the heat, cracking under our bare feet as we ran toward the lake. I remember the shock of the cold water against the sun on my skin, how good it felt, how alive. I was there with Deanna and her cousin, on the shore, when we heard the shouting.</p>
-  <p class="reveal">A group of teenage boys had been swimming nearby. One of them had eaten lunch not long before, then dove into the deep water with the others. I didn&rsquo;t know him. I never even learned his name. But I watched as the men nearby tried to reach him, tried to pull him back to the surface, and failed. I watched the lake take him. Later they had to drag the water to bring him home.</p>
+  <p class="reveal" data-scene="lake">A group of teenage boys had been swimming nearby. One of them had eaten lunch not long before, then dove into the deep water with the others. I didn&rsquo;t know him. I never even learned his name. But I watched as the men nearby tried to reach him, tried to pull him back to the surface, and failed. I watched the lake take him. Later they had to drag the water to bring him home.</p>
   <p class="reveal">I had never seen death arrive that close before. Sudden, senseless, completely indifferent to how young he was or how ordinary the afternoon had been until that moment. I think something in me understood, without yet having words for it, that life could simply end. That it asked no permission. That you could be laughing in the sun one minute and gone the next.</p>
-  <p class="reveal">I did not go home from that summer unchanged.</p>
+  <p class="reveal" data-scene="surface">I did not go home from that summer unchanged.</p>
   <p class="reveal">I got braces. I got a haircut nobody in our town had yet, the kind you only saw in magazines, and the barber who gave it to me ended up with a line of new clients because of it. My mother, as she always did, looked forward to spending her hard earned paycheck to better my life. She took me on one of our trips to Columbus for new clothes for the year ahead. I started saying out loud, to anyone who would listen, that I was going to be a model. Not as a wish anymore. As a fact I hadn&rsquo;t lived into yet.</p>
   <p class="reveal">My mother spent her money on me, on our home, on making our life full. My father saved every dollar he earned and kept it close, kept it his. Years later, when their marriage finally ended, she would let him take almost all of it. She was so broken by what he had done to her that she let him convince her it was somehow her fault, that she deserved nothing. She just wanted to be free of him. He had already taken far more than money. I learned something from watching that, something about what money is actually for. I have found in my own life that when it stops being the point, when you refuse to manipulate or use people to get it, it tends to find its way to you anyway. Enough of it, always.</p>
   <p class="reveal">I have always believed that what you speak begins to take shape. That summer, I think I started speaking my life into being.</p>
@@ -424,7 +315,7 @@
 <div class="breath reveal">· · ·</div>
 
 <!-- Room VI -->
-<section class="room" id="room6">
+<section class="room" id="room6" data-scene="stage">
   <div class="doorframe reveal">
     <div class="room-no">Room VI</div>
     <h2>A Room of Belonging</h2>
@@ -440,8 +331,8 @@
   <p class="reveal">Scott was the kind of person who sang whether he was on a stage or not. He sang walking down the hall, sang at the lunch table, sang to himself in the middle of a conversation, and nobody minded, because his voice was genuinely beautiful and his joy was genuinely contagious. You couldn&rsquo;t watch him and stay still. Something in his energy reached into you and lifted your feet. He made you want to live more fully just by showing you what living fully looked like.</p>
   <p class="reveal">He knew every word of every Barry Manilow song. I know this because I was sitting right beside him the night a small group of us went to Columbus to see him in concert, Kelly there too, and our teacher who had chosen us as her favorites. Scott sang the whole time. Not quietly, not under his breath, but fully, the way he did everything, with his whole chest and his whole heart. I think it was my first concert. I only remember being glad he was next to me.</p>
   <p class="reveal">What people didn&rsquo;t always see, what I only saw in our quietest moments, was the place where all that brightness came from and what it cost him. His father was a hard man, strict in the way that leaves marks, and for Scott, who could not have been anyone other than who he was, those marks went deep. We never talked about it directly. We didn&rsquo;t need to. His eyes told me when he was carrying something, just as mine told him. We held it for each other without words, without making it into something that had to be named or solved.</p>
-  <p class="reveal">Our fathers, I understood much later, had more in common than we ever said out loud. Mine was not as harsh, but he had his own kind of distance. I remember being five or six years old, walking up to him while he was outside cutting the shrubbery, and asking, &ldquo;Dad, do you love me as much as you love mommy?&rdquo; He looked right at me and said, no. No explanation. No softer version. Just no. I think Scott&rsquo;s father answered his son in much the same way&hellip; not always in words, but in that daily language of distance that certain men speak without knowing it.</p>
-  <p class="reveal">Neither of us felt love from our fathers. Our mothers loved us with everything they had&hellip; and both marriages eventually broke under the weight of carrying us alone. We never said this to each other. But I think we knew it in our bodies long before we had words for it. It was part of why we could be so quiet together, the two of us, while everyone around us thought of Scott and Kelly as the loud ones, the theatrical ones, the ones who announced themselves. I was never that, not in public&hellip; but I have always liked to think I made the room brighter too, just in my own quieter way.</p>
+  <p class="reveal" data-scene="cold">Our fathers, I understood much later, had more in common than we ever said out loud. Mine was not as harsh, but he had his own kind of distance. I remember being five or six years old, walking up to him while he was outside cutting the shrubbery, and asking, &ldquo;Dad, do you love me as much as you love mommy?&rdquo; He looked right at me and said, no. No explanation. No softer version. Just no. I think Scott&rsquo;s father answered his son in much the same way&hellip; not always in words, but in that daily language of distance that certain men speak without knowing it.</p>
+  <p class="reveal" data-scene="stage">Neither of us felt love from our fathers. Our mothers loved us with everything they had&hellip; and both marriages eventually broke under the weight of carrying us alone. We never said this to each other. But I think we knew it in our bodies long before we had words for it. It was part of why we could be so quiet together, the two of us, while everyone around us thought of Scott and Kelly as the loud ones, the theatrical ones, the ones who announced themselves. I was never that, not in public&hellip; but I have always liked to think I made the room brighter too, just in my own quieter way.</p>
   <p class="reveal">He just wanted to love and be loved. Like all of us.</p>
   <p class="reveal">It began with my mother.</p>
   <p class="reveal">Not with the agencies or the runways or the photographs that would come later, but with her, driving me to Columbus in my junior high years so I could attend the Barbizon School of Modeling. She paid for it herself. She made sure I went. I think she saw something in me before I had found it myself, or before I was willing to trust it, and she quietly put the tools in my hands without making a performance of it.</p>
@@ -449,43 +340,287 @@
   <p class="reveal">She never made me feel it was a sacrifice.</p>
   <p class="reveal">All of it was moving toward Las Vegas. There was a national competition, enormous, girls from everywhere across the country, so many that it seemed like thousands. I worked for it. I prepared the way I had learned to prepare, with seriousness and also with instinct, and when the time came to do my commercial, I found the thing I always find when I am nervous and fully committed at the same time. I found the humor in it.</p>
   <p class="reveal">The commercial was for a bra. The line was something like, if you want to make mountains out of molehills&hellip; and I turned back around, having changed underneath, and I had very large breasts. I had stuffed the bra. I don&rsquo;t know exactly how I did it, only that I did, and it worked. The room responded the way a room responds when someone commits to something completely, without apology.</p>
-  <p class="reveal">They called my name.</p>
+  <p class="reveal" data-scene="marquee">They called my name.</p>
   <p class="reveal">I remember that moment as the highest point of my young life. I had earned it myself, step by step, Lexington to Las Vegas, rollers in the back seat to a stage with a spotlight. Eileen Ford wanted to sign me. Zoli wanted me. A television agency from Los Angeles wanted me, Warner Brothers as well. But I chose Elite, John Casablancas, because he had girls who looked like me&hellip; more exotic, more of the world. That was where I belonged. Elite paid for my test shots, my composites, my first weeks in New York. They believed in me the way you want someone to believe in you, with their resources as well as their words.</p>
-  <p class="reveal">I came home to tell my father.</p>
+  <p class="reveal" data-scene="stage">I came home to tell my father.</p>
   <p class="reveal">I think I imagined it in a particular way, the way you imagine things when you are young and have just done something extraordinary. I thought he might say congratulations. I thought this might finally be the moment.</p>
-  <p class="reveal">He came in and told me he was leaving my mother. That he was in love with someone else. He told me before he told her.</p>
+  <p class="reveal" data-scene="cold">He came in and told me he was leaving my mother. That he was in love with someone else. He told me before he told her.</p>
   <p class="reveal">My mother&rsquo;s breakdown was not only about him. It was about losing both of us at once. She had stayed in that marriage for years, had seen lawyers, had threatened to leave, but never did. She stayed because of me. And now I was leaving for New York, and she had known for a long time that she would not stop me, that she loved me too much to ask me to stay. So the reason she had stayed all those years was walking out the door&hellip; and he chose that exact moment to walk out first.</p>
   <p class="reveal">He took the wind out of my sails. That&rsquo;s for sure. And my mother&rsquo;s as well.</p>
   <p class="reveal">He had told me, when I chose modeling over finishing school, that he would take away the college fund he had saved for me. He did. He had always told me I would never make it, that this was not a life a person could build. I built it anyway. And years later, when it was clear that I had, he tried to tell a different story. He tried to say he had supported me.</p>
   <p class="reveal">He never did.</p>
-  <p class="reveal">But my mother drove me to Columbus. My mother drove me to Lexington, Kentucky every weekend. Eight hours in a car, there and back, week after week, for as long as it took. My mother sat in a waiting room somewhere and believed, without needing to say it, that the girl in the back seat with rollers in her hair was going to make it.</p>
+  <p class="reveal" data-scene="sunrise">But my mother drove me to Columbus. My mother drove me to Lexington, Kentucky every weekend. Eight hours in a car, there and back, week after week, for as long as it took. My mother sat in a waiting room somewhere and believed, without needing to say it, that the girl in the back seat with rollers in her hair was going to make it.</p>
   <p class="reveal">She was right.</p>
 </section>
 
-<div class="to-be-continued reveal">
+<div class="to-be-continued reveal" data-scene="base">
   <div class="rule"></div>
   <p>to be continued&hellip;</p>
 </div>
 
+
 <script>
-  (function () {
-    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var els = document.querySelectorAll('.reveal');
-    if (reduced || !('IntersectionObserver' in window)) {
-      els.forEach(function (el) { el.classList.add('visible'); });
-      return;
-    }
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (reduced || !('IntersectionObserver' in window)) {
+    els.forEach(function (el) { el.classList.add('visible'); });
+  } else {
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          io.unobserve(entry.target);
-        }
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' });
     els.forEach(function (el) { io.observe(el); });
-  })();
-</script>
+  }
+  if (reduced) return;
 
+  var root = document.documentElement;
+  var body = document.body;
+  var fxOn = true;
+
+  // ---------- scene definitions ----------
+  function c(hex) { return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
+  var SCENES = {
+    cover:      { bg:c('#F6F2EA'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    base:       { bg:c('#F6F2EA'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    awakening:  { bg:c('#FAF7F1'), ink:c('#2B2430'), head:c('#5A4470'), mode:'bubbles',spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    garden:     { bg:c('#F7F2E4'), ink:c('#2B2430'), head:c('#5A4470'), mode:'pollen', spot:0, sun:.55, heat:0, water:0, stage:0,   rise:0 },
+    flood:      { bg:c('#EDECE6'), ink:c('#2B2430'), head:c('#5A4470'), mode:'rain',   spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    windows:    { bg:c('#F1EFEA'), ink:c('#2B2430'), head:c('#5A4470'), mode:null,     spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    starlight:  { bg:c('#12101C'), ink:c('#E9E5F2'), head:c('#C9BFE0'), mode:null,     spot:1, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    voices:     { bg:c('#F8F4EA'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:.25, heat:0, water:0, stage:0,   rise:0 },
+    dusk:       { bg:c('#EDE7DA'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    nightwalk:  { bg:c('#131019'), ink:c('#E4DFD6'), head:c('#C9BFE0'), mode:'fireflies', spot:1, sun:0, heat:0, water:0, stage:0,  rise:0 },
+    ranger:     { bg:c('#181420'), ink:c('#E7E2D8'), head:c('#C9BFE0'), mode:'fireflies', spot:1, sun:0, heat:0, water:0, stage:0,  rise:0 },
+    dawnreturn: { bg:c('#4A4258'), ink:c('#EDE8E0'), head:c('#D6CCE8'), mode:null,     spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    heat:       { bg:c('#F6EDDC'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:.3,  heat:.6,water:0, stage:0,   rise:0 },
+    lake:       { bg:c('#D8E2DE'), ink:c('#26333A'), head:c('#3E5560'), mode:'water',  spot:0, sun:0,   heat:0, water:1, stage:0,   rise:0 },
+    surface:    { bg:c('#F5F0E4'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:.35, heat:0, water:0, stage:0,   rise:0 },
+    stage:      { bg:c('#F4EFE5'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:0,   heat:0, water:0, stage:.4,  rise:0 },
+    cold:       { bg:c('#E9E9EC'), ink:c('#34343C'), head:c('#4A4458'), mode:null,     spot:0, sun:0,   heat:0, water:0, stage:0,   rise:0 },
+    marquee:    { bg:c('#F7ECD2'), ink:c('#2B2430'), head:c('#6B4F86'), mode:'sparkle',spot:0, sun:0,   heat:0, water:0, stage:.65, rise:0 },
+    sunrise:    { bg:c('#F6EEE0'), ink:c('#2B2430'), head:c('#5A4470'), mode:'motes',  spot:0, sun:0,   heat:0, water:0, stage:0,   rise:1 }
+  };
+
+  var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-scene]'));
+  var cur = { bg:c('#F6F2EA'), ink:c('#2B2430'), head:c('#5A4470'), spot:0 };
+  var target = SCENES.cover;
+  var curScene = 'cover';
+
+  function pickScene() {
+    var mid = window.innerHeight * 0.55;
+    var chosen = 'cover';
+    for (var i = 0; i < triggers.length; i++) {
+      var r = triggers[i].getBoundingClientRect();
+      if (r.top <= mid) chosen = triggers[i].getAttribute('data-scene');
+    }
+    if (chosen !== curScene) {
+      curScene = chosen;
+      target = SCENES[chosen] || SCENES.base;
+      body.setAttribute('data-scene', chosen);
+      setMode(target.mode);
+    }
+  }
+
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function lerp3(a, b, k) { return [lerp(a[0],b[0],k), lerp(a[1],b[1],k), lerp(a[2],b[2],k)]; }
+  function rgb(v) { return 'rgb(' + Math.round(v[0]) + ',' + Math.round(v[1]) + ',' + Math.round(v[2]) + ')'; }
+
+  // ---------- particles ----------
+  var canvas = document.getElementById('fx-canvas');
+  var ctx = canvas.getContext('2d');
+  var W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var parts = [];
+  var mode = 'motes';
+  var CAP = { motes: 40, pollen: 55, bubbles: 26, rain: 90, fireflies: 22, water: 45, sparkle: 60 };
+
+  function spawn(m) {
+    var p = { m: m, life: 1, fade: 0.004 + Math.random() * 0.004 };
+    if (m === 'motes') {
+      p.x = Math.random()*W; p.y = Math.random()*H; p.r = .6+Math.random()*1.6;
+      p.vx = (Math.random()-.5)*.14; p.vy = -(.04+Math.random()*.12); p.a = .12+Math.random()*.2;
+    } else if (m === 'pollen') {
+      p.x = Math.random()*W; p.y = -10; p.r = 1.2+Math.random()*2.4;
+      p.vx = (Math.random()-.5)*.3; p.vy = .25+Math.random()*.45; p.ph = Math.random()*6.28;
+      p.violet = Math.random() < .35; p.a = .18+Math.random()*.22;
+    } else if (m === 'bubbles') {
+      p.x = Math.random()*W; p.y = H+12; p.r = 2.5+Math.random()*7;
+      p.vx = (Math.random()-.5)*.15; p.vy = -(.18+Math.random()*.3); p.a = .07+Math.random()*.09;
+    } else if (m === 'rain') {
+      p.x = Math.random()*W; p.y = -20; p.len = 9+Math.random()*13;
+      p.vx = -.6; p.vy = 7+Math.random()*5; p.a = .12+Math.random()*.14;
+    } else if (m === 'fireflies') {
+      p.x = Math.random()*W; p.y = Math.random()*H; p.r = 1.1+Math.random()*1.4;
+      p.vx = (Math.random()-.5)*.3; p.vy = (Math.random()-.5)*.3;
+      p.ph = Math.random()*6.28; p.a = .5;
+    } else if (m === 'water') {
+      p.x = Math.random()*W; p.y = Math.random()*H; p.r = .8+Math.random()*2.2;
+      p.vx = (Math.random()-.5)*.1; p.vy = -(.05+Math.random()*.1); p.a = .10+Math.random()*.14;
+    } else if (m === 'sparkle') {
+      p.x = Math.random()*W; p.y = Math.random()*H; p.r = .7+Math.random()*1.4;
+      p.vx = 0; p.vy = 0; p.ph = Math.random()*6.28; p.a = .5; p.fade = .01;
+    }
+    return p;
+  }
+  function setMode(m) { mode = m; }
+
+  // ---------- ants ----------
+  var antsPara = document.getElementById('p-ants');
+  var ants = [];
+  for (var i = 0; i < 12; i++) ants.push({ off: Math.random(), sp: .55 + Math.random()*.45, w: Math.random()*6.28 });
+
+  // ---------- spotlight ----------
+  var sx = W/2, sy = H/2;
+  window.addEventListener('pointermove', function (e) { sx = e.clientX; sy = e.clientY; }, { passive: true });
+  window.addEventListener('touchmove', function (e) {
+    if (e.touches.length) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
+  }, { passive: true });
+
+  // ---------- cover parallax ----------
+  var coverImg = document.querySelector('.cover-photo img');
+  var px = 0, py = 0, tx = 0, ty = 0;
+  window.addEventListener('pointermove', function (e) {
+    tx = (e.clientX / W - .5); ty = (e.clientY / H - .5);
+  }, { passive: true });
+
+  // ---------- stillness toggle ----------
+  var btn = document.getElementById('stillness');
+  btn.addEventListener('click', function () {
+    fxOn = !fxOn;
+    body.classList.toggle('fx-off', !fxOn);
+    btn.textContent = fxOn ? '\u2726 stillness' : '\u2726 awaken';
+  });
+
+  // ---------- main loop ----------
+  var t = 0;
+  var visible = true;
+  document.addEventListener('visibilitychange', function () { visible = !document.hidden; });
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible) return;
+    t += 1/60;
+    pickScene();
+
+    // lerp palette
+    var k = 0.045;
+    cur.bg = lerp3(cur.bg, target.bg, k);
+    cur.ink = lerp3(cur.ink, target.ink, k);
+    cur.head = lerp3(cur.head, target.head, k);
+    cur.spot = lerp(cur.spot, target.spot, k);
+    root.style.setProperty('--bgc', rgb(cur.bg));
+    root.style.setProperty('--inkc', rgb(cur.ink));
+    root.style.setProperty('--headc', rgb(cur.head));
+    root.style.setProperty('--spot-o', cur.spot.toFixed(3));
+    root.style.setProperty('--sun-o', target.sun);
+    root.style.setProperty('--heat-o', target.heat);
+    root.style.setProperty('--water-o', target.water);
+    root.style.setProperty('--stage-o', target.stage);
+    root.style.setProperty('--rise-o', target.rise);
+    root.style.setProperty('--spotx', sx + 'px');
+    root.style.setProperty('--spoty', sy + 'px');
+    body.style.background = rgb(cur.bg);
+    body.style.color = rgb(cur.ink);
+
+    // parallax
+    if (coverImg) {
+      px = lerp(px, tx, .06); py = lerp(py, ty, .06);
+      var cr = coverImg.getBoundingClientRect();
+      if (cr.bottom > 0) {
+        coverImg.style.transform = 'rotateY(' + (px*4) + 'deg) rotateX(' + (-py*4) + 'deg) translate(' + (px*6) + 'px,' + (py*6) + 'px)';
+      }
+    }
+
+    // particles
+    ctx.clearRect(0, 0, W, H);
+    if (fxOn) {
+      var cap = mode ? (CAP[mode] || 0) : 0;
+      var alive = 0;
+      for (var i = 0; i < parts.length; i++) if (parts[i].m === mode) alive++;
+      if (mode && alive < cap && Math.random() < .5) parts.push(spawn(mode));
+
+      var dark = cur.spot > .4;
+      for (var i = parts.length - 1; i >= 0; i--) {
+        var p = parts[i];
+        if (p.m !== mode) { p.life -= .02; }
+        if (p.life <= 0) { parts.splice(i, 1); continue; }
+        p.x += p.vx; p.y += p.vy;
+        if (p.m === 'pollen') { p.ph += .02; p.x += Math.sin(p.ph) * .5; }
+        if (p.m === 'fireflies') {
+          p.ph += .03; p.vx += (Math.random()-.5)*.02; p.vy += (Math.random()-.5)*.02;
+          p.vx = Math.max(-.4, Math.min(.4, p.vx)); p.vy = Math.max(-.4, Math.min(.4, p.vy));
+        }
+        if (p.y < -30 || p.y > H+30 || p.x < -30 || p.x > W+30) {
+          if (p.m === mode) { parts[i] = spawn(mode); continue; }
+          parts.splice(i, 1); continue;
+        }
+        var a = p.a * p.life;
+        ctx.beginPath();
+        if (p.m === 'rain') {
+          ctx.strokeStyle = 'rgba(120,130,140,' + a + ')';
+          ctx.lineWidth = 1;
+          ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.vx*2, p.y + p.len);
+          ctx.stroke();
+        } else if (p.m === 'fireflies') {
+          var g = .5 + .5*Math.sin(p.ph*2.2);
+          ctx.fillStyle = 'rgba(214,255,160,' + (a*g*.85) + ')';
+          ctx.shadowColor = 'rgba(214,255,160,.9)'; ctx.shadowBlur = 10*g;
+          ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.fill(); ctx.shadowBlur = 0;
+        } else if (p.m === 'sparkle') {
+          var g2 = .5 + .5*Math.sin(p.ph + t*3);
+          ctx.fillStyle = 'rgba(226,180,90,' + (a*g2) + ')';
+          ctx.arc(p.x, p.y, p.r*g2+0.3, 0, 6.28); ctx.fill();
+        } else if (p.m === 'pollen') {
+          ctx.fillStyle = p.violet ? 'rgba(122,98,150,' + a + ')' : 'rgba(206,168,96,' + a + ')';
+          ctx.ellipse(p.x, p.y, p.r, p.r*.6, p.ph, 0, 6.28); ctx.fill();
+        } else if (p.m === 'water') {
+          ctx.fillStyle = 'rgba(88,128,136,' + a + ')';
+          ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.fill();
+        } else if (p.m === 'bubbles') {
+          ctx.strokeStyle = 'rgba(150,140,170,' + a + ')';
+          ctx.lineWidth = .8;
+          ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.stroke();
+        } else {
+          ctx.fillStyle = dark ? 'rgba(220,214,190,' + a + ')' : 'rgba(194,155,74,' + a + ')';
+          ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.fill();
+        }
+      }
+
+      // ants beside the rhubarb paragraph
+      if (antsPara) {
+        var ar = antsPara.getBoundingClientRect();
+        if (ar.bottom > 0 && ar.top < H) {
+          var axx = ar.left > 46 ? ar.left - 26 : 8;
+          var top = Math.max(ar.top + 8, 8);
+          var bot = Math.min(ar.bottom - 8, H - 8);
+          var len = bot - top;
+          if (len > 60) {
+            ctx.fillStyle = 'rgba(56,48,38,.75)';
+            for (var j = 0; j < ants.length; j++) {
+              var an = ants[j];
+              var pos = ((t * 16 * an.sp) + an.off * len) % len;
+              var ay = top + pos;
+              var awx = axx + Math.sin(t*3 + an.w + ay*.05) * 1.6;
+              ctx.beginPath(); ctx.arc(awx, ay, 1.1, 0, 6.28); ctx.fill();
+              ctx.beginPath(); ctx.arc(awx + .4, ay + 2, .9, 0, 6.28); ctx.fill();
+              ctx.beginPath(); ctx.arc(awx - .3, ay - 2, .8, 0, 6.28); ctx.fill();
+            }
+          }
+        }
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
