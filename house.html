@@ -304,6 +304,26 @@ function textTex(lines,{size=170,italicLine=-1,color='#F6F2EA',sub=null}={}){
     }
   });
 }
+/* soft round sprite so particles are motes, never squares */
+const dotTex=canvasTex(64,64,(x,w,h)=>{
+  const g=x.createRadialGradient(32,32,0,32,32,30);
+  g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.45,'rgba(255,255,255,.35)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  x.fillStyle=g; x.fillRect(0,0,w,h);
+});
+/* an italic line of the book, hung in the air */
+function hangQuote(line,x,y,z,ry=0,wdt=7,op=0.3,px=88){
+  const tex=canvasTex(2048,384,(c,w,h)=>{
+    c.textAlign='center'; c.textBaseline='middle';
+    c.font=`italic 300 ${px}px "Cormorant Garamond", serif`;
+    c.fillStyle='#F6F2EA'; c.fillText(line,w/2,h/2);
+  });
+  const q=new THREE.Mesh(new THREE.PlaneGeometry(wdt,wdt*0.1875),
+    new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:op,
+      depthWrite:false,blending:THREE.AdditiveBlending}));
+  q.position.set(x,y,z); q.rotation.y=ry; q.userData.float={a:Math.random()*6.28,r:0.2};
+  scene.add(q); return q;
+}
 /* soft abstract painting: layered washes + blooms */
 function paintingTex(seedHues, accents){
   return canvasTex(768,1024,(x,w,h)=>{
@@ -440,13 +460,31 @@ for(let i=0;i<5;i++){
   s.userData.float={a:Math.random()*6.28, r:0.25};
   scene.add(s);
 }
+/* small empty frames drifting in the vestibule: memories not yet hung */
+for(let i=0;i<3;i++){
+  const f=frameGroup(paintingTex(['#1A1622','#241E2E'],['#5A4470','#C29B4A']),0.7,1.0);
+  f.position.set([-2.8,2.9,-2.2][i], 2.4+i*0.5, -21.5-i*2.4);
+  f.rotation.y=(i-1)*0.35;
+  f.userData.float={a:i*2.1, r:0.3};
+  scene.add(f);
+}
 
-/* corridor of doors: rooms within rooms */
+/* corridor of doors: rooms within rooms, each holding a future chapter */
+const FUTURE=['VOICES','SHADOWS','TRANSFORMATION','BELONGING','THE CONCRETE JUNGLE','WITHOUT WORDS'];
 for(let i=0;i<6;i++){
   const dw=doorway(2.3,3.5, i===5?0.35:0.12);
   dw.position.set((i%2?1.9:-1.9), 0, -33-i*2.6);
   dw.rotation.y=(i%2?-1:1)*0.28;
   scene.add(dw);
+  const plaque=new THREE.Mesh(new THREE.PlaneGeometry(2.1,0.39),
+    new THREE.MeshBasicMaterial({map:canvasTex(1024,192,(x,w,h)=>{
+      x.textAlign='center'; x.textBaseline='middle';
+      x.font='300 72px "Cormorant Garamond", serif'; x.fillStyle='#C29B4A';
+      x.letterSpacing='20px'; x.fillText(FUTURE[i],w/2,h/2);
+    }),transparent:true,opacity:0.5,depthWrite:false,blending:THREE.AdditiveBlending}));
+  plaque.position.set(dw.position.x,3.85,dw.position.z);
+  plaque.rotation.y=dw.rotation.y;
+  scene.add(plaque);
 }
 const corridorGlow=new THREE.PointLight(0xB49AD8, 4, 16, 1.9); corridorGlow.position.set(0,3,-40); scene.add(corridorGlow);
 room({z:-40, w:8, d:20, h:5.2, wallMat:matWall});
@@ -464,7 +502,8 @@ r1text.position.set(0,3.2,R1Z-8.3); scene.add(r1text);
 
 /* window + sunlight shafts */
 const r1win=new THREE.Mesh(new THREE.PlaneGeometry(2.6,3.4),
-  new THREE.MeshBasicMaterial({color:0xE0C890}));
+  new THREE.MeshBasicMaterial({color:0xE0C890,transparent:true,opacity:0.28,
+    blending:THREE.AdditiveBlending,depthWrite:false}));
 r1win.position.set(-7.4,3.1,R1Z+2); r1win.rotation.y=Math.PI/2; scene.add(r1win);
 lightShaft(-5.6,3.0,R1Z+2, Math.PI/2, 0xFFE0A0, 8, 3.2);
 const r1sun=new THREE.PointLight(0xFFD9A0, 14, 22, 1.7); r1sun.position.set(-6,3.4,R1Z+2); scene.add(r1sun);
@@ -498,6 +537,62 @@ pages.position.y=0.045; book.add(cover,pages);
 book.position.set(2.2,1.1,R1Z+3.4); book.rotation.y=0.5; scene.add(book);
 const bookGlow=new THREE.PointLight(0xF6E8C8, 2.2, 4, 2); bookGlow.position.set(2.2,1.6,R1Z+3.4); scene.add(bookGlow);
 
+/* garden beyond the window: a painted world, not a flat lamp */
+const gardenView=new THREE.Mesh(new THREE.PlaneGeometry(3.2,4),
+  new THREE.MeshBasicMaterial({map:canvasTex(512,640,(x,w,h)=>{
+    const g=x.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,'#F0DCA0'); g.addColorStop(0.55,'#C8B878'); g.addColorStop(1,'#6A7A48');
+    x.fillStyle=g; x.fillRect(0,0,w,h);
+    let s=13; const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+    for(let i=0;i<30;i++){
+      const r=12+rnd()*44, px=rnd()*w, py=h*0.55+rnd()*h*0.45;
+      const rg=x.createRadialGradient(px,py,0,px,py,r);
+      const col=['#5A4470','#7A5FA0','#C29B4A','#8A9A50'][Math.floor(rnd()*4)];
+      rg.addColorStop(0,col+'88'); rg.addColorStop(1,col+'00');
+      x.fillStyle=rg; x.beginPath(); x.arc(px,py,r,0,7); x.fill();
+    }
+  })}));
+gardenView.position.set(-7.55,3.1,R1Z+2); gardenView.rotation.y=Math.PI/2; scene.add(gardenView);
+
+/* her words, hung in the sunlight */
+hangQuote('Stillness was not emptiness.', 0,4.9,R1Z+1, 0, 7.5, 0.26);
+/* the ants: a line of tiny gold pilgrims circling near the table...
+   worlds within worlds */
+const ANTN=26, antGeo=new THREE.BufferGeometry();
+antGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(ANTN*3),3));
+const ants=new THREE.Points(antGeo,new THREE.PointsMaterial({
+  color:0xC29B4A,size:0.035,map:dotTex,transparent:true,opacity:0.8,
+  blending:THREE.AdditiveBlending,depthWrite:false}));
+scene.add(ants);
+function antStep(t){
+  const ap=ants.geometry.attributes.position;
+  for(let i=0;i<ANTN;i++){
+    const u=(t*0.045+i/ANTN)%1, a=u*Math.PI*2;
+    ap.setXYZ(i, 2.2+Math.cos(a)*(1.7+Math.sin(i*3.1)*0.12),
+                 0.045,
+                 R1Z+3.4+Math.sin(a)*(1.25+Math.cos(i*2.3)*0.1));
+  }
+  ap.needsUpdate=true;
+}
+
+/* fireflies in the window light */
+const FFN=10, ffGeo=new THREE.BufferGeometry();
+ffGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(FFN*3),3));
+const fireflies=new THREE.Points(ffGeo,new THREE.PointsMaterial({
+  color:0xFFE0A0,size:0.09,map:dotTex,transparent:true,opacity:0.9,
+  blending:THREE.AdditiveBlending,depthWrite:false}));
+scene.add(fireflies);
+function fireflyStep(t){
+  const fp=fireflies.geometry.attributes.position;
+  for(let i=0;i<FFN;i++){
+    fp.setXYZ(i, -5.5+Math.sin(t*0.31+i*2.4)*1.6,
+                 2.6+Math.sin(t*0.43+i*1.7)*1.2,
+                 R1Z+2+Math.cos(t*0.27+i*3.1)*1.8);
+  }
+  fp.needsUpdate=true;
+  fireflies.material.opacity=0.55+Math.sin(t*1.8)*0.3;
+}
+
 /* pansy petals drifting in Room I */
 const petalGeo=new THREE.BufferGeometry();
 {
@@ -510,7 +605,7 @@ const petalGeo=new THREE.BufferGeometry();
   petalGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
 }
 const petals=new THREE.Points(petalGeo,new THREE.PointsMaterial({
-  color:0x9B7FC8,size:0.055,transparent:true,opacity:0.75,
+  color:0x9B7FC8,size:0.1,map:dotTex,transparent:true,opacity:0.65,
   blending:THREE.AdditiveBlending,depthWrite:false}));
 scene.add(petals);
 
@@ -548,14 +643,32 @@ const star=new THREE.Mesh(new THREE.IcosahedronGeometry(0.09,1),
 star.position.set(0,4.6,R2Z-2); scene.add(star);
 const starLight=new THREE.PointLight(0xB8E8A8, 1.2, 6, 2); starLight.position.copy(star.position); scene.add(starLight);
 
+/* her words beside the star */
+hangQuote('I spoke to Jesus the way a child speaks to a friend.', 0,5.4,R2Z-1.5, 0, 8.5, 0.22, 76);
+
 hang('room2_window',['#1C2436','#2B2430'],['#8FA3C8','#BFD2F2','#5A4470'],
       -7.35,3.2,R2Z+1.5, Math.PI/2, 2.4,3.2);
 hang('room2_star',  ['#141826','#241E2E'],['#BFF0B0','#8FA3C8','#C29B4A'],
       -7.35,3.0,R2Z-3.2, Math.PI/2, 1.7,2.3);
 
-/* the unfinished door at the far end */
+/* the unfinished door at the far end: dust still becoming a room */
 const lastDoor=doorway(2.5,3.7,0.65); lastDoor.position.set(0,0,-88); scene.add(lastDoor);
 const lastLight=new THREE.PointLight(COLORS.gold, 8, 14, 1.7); lastLight.position.set(0,2,-88.8); scene.add(lastLight);
+const BN=isMobile?60:140, buildGeo=new THREE.BufferGeometry();
+buildGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(BN*3),3));
+const builders=new THREE.Points(buildGeo,new THREE.PointsMaterial({
+  color:COLORS.gold,size:0.05,map:dotTex,transparent:true,opacity:0.85,
+  blending:THREE.AdditiveBlending,depthWrite:false}));
+scene.add(builders);
+function builderStep(t){
+  const bp=builders.geometry.attributes.position;
+  for(let i=0;i<BN;i++){
+    const u=((t*0.05+i/BN)%1), a=i*2.399+t*0.15;   // golden-angle spiral, breathing inward
+    const r=(1-u)*3.2+0.15;
+    bp.setXYZ(i, Math.cos(a)*r*0.8, 1.9+Math.sin(a)*r*0.55, -88+Math.sin(u*Math.PI)*0.6);
+  }
+  bp.needsUpdate=true;
+}
 
 /* ambient dust everywhere */
 const dustGeo=new THREE.BufferGeometry();
@@ -569,7 +682,7 @@ const dustGeo=new THREE.BufferGeometry();
   dustGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
 }
 const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({
-  color:0xD8CCB8,size:0.03,transparent:true,opacity:0.5,
+  color:0xD8CCB8,size:0.055,map:dotTex,transparent:true,opacity:0.38,
   blending:THREE.AdditiveBlending,depthWrite:false}));
 scene.add(dust);
 
@@ -774,7 +887,7 @@ function tick(){
 
   /* living details */
   title.material.opacity=THREE.MathUtils.clamp(1-progress*14,0,1);
-  title.position.y=4.2+Math.sin(t*0.5)*0.15;
+  title.position.y=6.6+Math.sin(t*0.5)*0.15;
   book.rotation.y=0.5+Math.sin(t*0.4)*0.06;
   book.position.y=1.1+Math.sin(t*0.8)*0.02;
   star.position.y=4.6+Math.sin(t*1.1)*0.08;
@@ -792,6 +905,12 @@ function tick(){
   }
   pp.needsUpdate=true;
   dust.rotation.y=Math.sin(t*0.05)*0.02;
+  antStep(t); fireflyStep(t); builderStep(t);
+  /* a breath of roll in the corridor, like leaning through a dream */
+  if(!wandering){
+    const roll=(progress>0.24&&progress<0.35)?Math.sin(t*0.5)*0.012:Math.sin(t*0.33)*0.004;
+    camera.rotateZ(roll);
+  }
 
   composer.render();
 }
